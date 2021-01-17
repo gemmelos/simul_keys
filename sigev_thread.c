@@ -37,9 +37,8 @@
 /*     signal(sig, SIG_IGN); */
 /* } */
 
-
-void my_fn(union sig_val sv) {
-    return 0;
+void my_fn(union sigval sv) {
+    printf("in signal handler thread fn 'myfn'\n");
 }
 
 int
@@ -71,7 +70,7 @@ main(int argc, char *argv[])
 
     union sigval sv = {
         .sival_int = 5
-    }
+    };
 
     struct sigevent sev = {
         .sigev_notify = SIGEV_THREAD,
@@ -94,8 +93,9 @@ main(int argc, char *argv[])
             );
 
     if (timer != 0) {
-        printf("timer_create failed");
-        exit(1);
+        /* printf("timer_create failed, errno: %i\n", errno); */
+        perror("timer_create failed, errno: %i\n");
+        exit(EXIT_FAILURE);
     }
 
     /* timer_t timerid; */
