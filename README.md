@@ -3,7 +3,7 @@
 ## To build and run
 
 ```sh
-gcc xtoy.c -o main && sudo ./run.sh
+sudo ./build_run.sh
 ```
 
 ## Goal
