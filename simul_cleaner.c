@@ -192,13 +192,6 @@ int main(void)
     setbuf(stdin, NULL), setbuf(stdout, NULL);
     struct input_event event;
 
-    // Old way:
-    // timer_t timerid_source_one;
-    // timer_t timerid_source_two;
-    // timer_set_up(&timerid_source_one, &timer_thread_handler_source_one);
-    // timer_set_up(&timerid_source_two, &timer_thread_handler_source_two);
-    // struct itimerspec its;
-
     enum
     {
         TGT_INIT,
@@ -239,10 +232,6 @@ int main(void)
         if (timer_create(CLOCK_REALTIME, &sev, &timerid) != 0)
             err_exit("Failed on timer_create");
     }
-
-    // old way:
-    /* timer_t timerid_source_one = timer_ids[0]; */
-    /* timer_t timerid_source_two = timer_ids[1]; */
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -306,100 +295,6 @@ int main(void)
                     }
                 }
             }
-
-            // Catch non-source-key down while source-key is down
-            // (i.e. while timer still going)
-            /* if (event.value == KEY_PRESSED && event.code != SOURCE_ONE_CODE
-             * && */
-            /*     event.code != SOURCE_TWO_CODE) */
-            /* { */
-            /*     if (timer_is_armed(timerid_source_one)) */
-            /*     { */
-            /*         timer_disarm(timerid_source_one, &its); */
-            /*         write_key_event(&source_one_down, 1); */
-            /*     } */
-            /*     else if (timer_is_armed(timerid_source_two)) */
-            /*     { */
-            /*         timer_disarm(timerid_source_two, &its); */
-            /*         write_key_event(&source_two_down, 1); */
-            /*     } */
-            /* } */
-            /* else if (event.code == SOURCE_ONE_CODE) */
-            /* { */
-            /*     if (event.value == KEY_PRESSED) */
-            /*     { */
-            /*         if (timer_is_armed(timerid_source_two)) */
-            /*         { */
-            /*             timer_disarm(timerid_source_two, &its); */
-            /*             write_key_event(&target_down, 0); */
-            /*             targets_state = TGT_PRESSED_WRITTEN; */
-            /*             continue; */
-            /*         } */
-            /*         else */
-            /*         { */
-            /*             timer_arm(timerid_source_one, &its); */
-            /*             continue; */
-            /*         } */
-            /*     } */
-            /*     else if (event.value == KEY_RELEASED) */
-            /*     { */
-            /*         if (targets_state == TGT_RELEASED_WRITTEN) */
-            /*         { */
-            /*             // timer shouldn't be armed anymore */
-            /*             // in this state so we don't check them */
-            /*             targets_state = TGT_INIT; */
-            /*             continue; */
-            /*         } */
-            /*         else if (targets_state == TGT_PRESSED_WRITTEN) */
-            /*         { */
-            /*             targets_state = TGT_RELEASED_WRITTEN; */
-            /*             write_key_event(&target_up, 0); */
-            /*             continue; */
-            /*         } */
-            /*         else */
-            /*         { */
-            /*             timer_disarm(timerid_source_one, &its); */
-            /*             write_key_event(&source_one_down, 1); */
-            /*         } */
-            /*     } */
-            /* } */
-            /* else if (event.code == SOURCE_TWO_CODE) */
-            /* { */
-            /*     if (event.value == KEY_PRESSED) */
-            /*     { */
-            /*         if (timer_is_armed(timerid_source_one)) */
-            /*         { */
-            /*             timer_disarm(timerid_source_one, &its); */
-            /*             write_key_event(&target_down, 0); */
-            /*             targets_state = TGT_PRESSED_WRITTEN; */
-            /*             continue; */
-            /*         } */
-            /*         else */
-            /*         { */
-            /*             timer_arm(timerid_source_two, &its); */
-            /*             continue; */
-            /*         } */
-            /*     } */
-            /*     else if (event.value == KEY_RELEASED) */
-            /*     { */
-            /*         if (targets_state == TGT_RELEASED_WRITTEN) */
-            /*         { */
-            /*             targets_state = TGT_INIT; */
-            /*             continue; */
-            /*         } */
-            /*         else if (targets_state == TGT_PRESSED_WRITTEN) */
-            /*         { */
-            /*             targets_state = TGT_RELEASED_WRITTEN; */
-            /*             write_key_event(&target_up, 0); */
-            /*             continue; */
-            /*         } */
-            /*         else */
-            /*         { */
-            /*             timer_disarm(timerid_source_two, &its); */
-            /*             write_key_event(&source_two_down, 1); */
-            /*         } */
-            /*     } */
-            /* } */
         }
 
         // Write the potentially modified event
