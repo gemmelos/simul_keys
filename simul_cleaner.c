@@ -79,7 +79,7 @@ void write_event(const struct input_event *event)
         err_exit("Failed on write_event");
 }
 
-void write_key_event(const struct input_event *iep, char syn_sleep)
+void write_key_event(const struct input_event *iep, bool syn_sleep)
 {
     write_event(iep);
     write_event(&syn);
@@ -94,12 +94,12 @@ void write_key_event(const struct input_event *iep, char syn_sleep)
 ////////////////////////////////////////////////////////////////////////////////
 void timer_thread_handler_source_one(union sigval sv)
 {
-    write_key_event(&source_one_down, 1);
+    write_key_event(&source_one_down, true);
 }
 
 void timer_thread_handler_source_two(union sigval sv)
 {
-    write_key_event(&source_two_down, 1);
+    write_key_event(&source_two_down, true);
 }
 
 // void timer_disarm(timer_t tid, struct itimerspec *its)
@@ -157,7 +157,7 @@ void timer_set_up(timer_t *tidp, void (*handler)(union sigval))
 static const unsigned int SOURCE_KEYS[] = {KEY_J, KEY_K};
 static const unsigned int TARGET_KEYS[] = {KEY_ESC};
 
-void timer_handler(union sigval sv) { write_key_event(sv.sival_ptr, 1); }
+void timer_handler(union sigval sv) { write_key_event(sv.sival_ptr, true); }
 
 size_t find_index(const int array[], const size_t size, const int value)
 {
@@ -166,6 +166,18 @@ size_t find_index(const int array[], const size_t size, const int value)
         ++index;
     return (index == size ? -1 : index);
 };
+
+
+/**
+ * Get 'opposite'/'inverse' index by XOR-ing with 1
+ * 0 -> 1
+ * 1 -> 0
+ */
+inline size_t goi(size_t index) 
+{
+  return index ^ 0x1;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -251,7 +263,7 @@ int main(void)
                     if (is_timer_armed(timer_ids[i]))
                     {
                         timer_disarm(timer_ids[i]);
-                        write_key_event(&events[(1 + i) % 2][KEY_PRESSED], 1);
+                        write_key_event(&events[goi(i)][KEY_PRESSED], true);
                     }
                 }
             }
@@ -259,10 +271,10 @@ int main(void)
             {
                 if (event.value == KEY_PRESSED)
                 {
-                    if (is_timer_armed(timer_ids[(1 + index_found) % 2]))
+                    if (is_timer_armed(timer_ids[goi(i)]))
                     {
                         timer_disarm(timer_ids[(1 + index_found) % 2]);
-                        write_key_event(&target_down, 0);
+                        write_key_event(&target_down, false);
                         targets_state = TGT_PRESSED_WRITTEN;
                         continue;
                     }
@@ -283,14 +295,14 @@ int main(void)
                     }
                     else if (targets_state == TGT_PRESSED_WRITTEN)
                     {
-                        write_key_event(&target_up, 0);
+                        write_key_event(&target_up, false);
                         targets_state = TGT_RELEASED_WRITTEN;
                         continue;
                     }
                     else
                     {
                         timer_disarm(timer_ids[index_found]);
-                        write_key_event(&events[i][KEY_PRESSED], 1);
+                        write_key_event(&events[i][KEY_PRESSED], true;
                     }
                 }
             }
