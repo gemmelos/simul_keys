@@ -1,5 +1,34 @@
 # Simultaneous key presses
 
+Mostly inspired by Karabiner-Elements, [simultaneous docs](https://karabiner-elements.pqrs.org/docs/json/complex-modifications-manipulator-definition/from/simultaneous).
+
+## Why use timers?
+(Let's assume a threshold of 50ms)
+
+Let's say we map the 'simultaneous' press of the keys `a`, `b` and `c` to `ESC`.
+When `a` is pressed we want to swallow it and NOT transmit/send/write-to-stdout the key-down event.
+Because if we do and you are, for example, in a text editor, the letter "a" will show up.
+Instead we need to swallow it (i.e. hold on to the `a` key-down event for a bit) and wait for the simul-threshold (say 50ms) before we actually want to transmit it, because we could press `b` and `c` in the threshold time and if so we should send a key-down event for our target key `ESC`.
+For the swallowing behavior timers are used.
+The timer's behavior is quite simple.
+It uses `SIGEV_THREAD` to execute its handler.
+There exists a timer+handler for each simul-key (i.e. each source key).
+On timer expiration the handler will be executed.
+The handler transmits/writes-to-stdout the simul-key linked to this timer, i.e. spit out the swallowed key xD
+We terminate/stop the timer and therefore prevent the handler from being able to fire in the case where all required simul-keys, for our example `a`, `b` and `c`, are pressed within the threshold time, which we refer to as having pressed `a`, `b` and `c` 'simultaneously'.
+
+In the case having more than two source keys this approach has the unfortunate side-effect that we do not take into account the running timer of the first source when the second source key is pressed within the threshold.
+So if `a` is pressed and 30ms later `b` is pressed, we do not set the timer for `b` to (50 - 20 =) 30ms but instead set it to 50ms as well.
+This means that when pressing `a` and `b` there will be the same delay for both keys before they are actually transmitted/written-to-stdout.
+Currently this is mainly chosen because of laziness and keeping the timer setup/activation code simpler.
+By having this logic though I suppose the following is possible: press `a` --30ms--> press `b` --30ms--> press `c` --5ms--> release `a` --5ms--> press `a` will result in the target key(s) being transmitted. (maybe an unlikely scenario)
+Intuitively I think we want the second source key's timer to last for 50 - 'time elapsed on first source key's timer', so that they would end around the same time.
+Technically we can get the elapsed time information from any timer and use it.
+Would this additional logic cause lag or other problems?
+I guess probably not because we are going to swallow the key no matter anyway, we don't need reduce the logic because we don't need to send the key back out immediately.
+Worth a try for v2 of the three-simul-keys implementation.
+
+
 ## To build and run
 
 ```sh
@@ -25,44 +54,44 @@ keyboard:       J↓      K↓              J↑       K↑
 computer sees:          ESC↓            ESC↑
 ```
 
-## Behavior - 1 Key 
+## Behavior - 1 Key
 
-1)
+1.
 
 ```txt
-<------ delay ------>
+<------ threshold ------>
 jd                              ju
                      jdR        ju
 ```
 
-2)
+2.
 
 ```txt
-<------ delay ------>
+<------ threshold ------>
 jd      ju
         jd,ju
 ```
 
-3)
+3.
 
 ```txt
-<------ delay ------>
+<------ threshold ------>
 jd    ad
       jd,ad
 ```
 
-4)
+4.
 
 ```txt
-<------ delay ------>
+<------ threshold ------>
 jd    ad     ju  au
       jd,ad  ju  au
 ```
 
-5)
+5.
 
 ```txt
-<------ delay ------>
+<------ threshold ------>
 jd    ad     au  ju
       jd,ad  au  ju
 ```
@@ -70,11 +99,10 @@ jd    ad     au  ju
 I think 4 and 5 work, i.e. same as if we would press `m` (instead of `j`) and `a`.
 Not 100% yet, let's see if something comes up later on.
 
-
 ## Behavior - Two keys
 
 ```txt
-<------ delay ------>
+<------ threshold ------>
 jd    kd     ku         ju
       Ed     Eu
 ```
@@ -82,7 +110,6 @@ jd    kd     ku         ju
 > How do we catch ESC repeat and send it through?
 
 Possibly we have a state `bool ESC_DOWN` which if true and we are receiving `j` or `k` repeat (I guess we should choose either one not both?) then we send ESC repeat instead?
-
 
 ### Example j+k to r
 
