@@ -158,8 +158,9 @@ void timer_set_up(timer_t *tidp, void (*handler)(union sigval))
 
 ////////////////////////////////////////////////////////////////////////////
 
-// Define your source and target keys:
-static const unsigned int SOURCE_KEYS[2] = {KEY_J, KEY_K};
+// Define your source and target keys
+// Currently supported: only length 2 source_keys and length 1 target_keys
+static const unsigned int SOURCE_KEYS[] = {KEY_J, KEY_K};
 static const unsigned int TARGET_KEYS[] = {KEY_ESC};
 static const size_t NUM_SOURCE_KEYS = sizeof(SOURCE_KEYS) / sizeof(int);
 
