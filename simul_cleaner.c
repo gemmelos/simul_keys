@@ -43,7 +43,7 @@
 
 // clang-format off
 const struct input_event
-syn             = {.type = EV_SYN , .code = SYN_REPORT  , .value = 0},
+SYN_EVENT             = {.type = EV_SYN , .code = SYN_REPORT  , .value = 0},
 source_one_down = {.type = EV_KEY , .code = KEY_J       , .value = 1},
 source_one_up   = {.type = EV_KEY , .code = KEY_J       , .value = 0},
 source_two_down = {.type = EV_KEY , .code = KEY_K       , .value = 1},
@@ -87,7 +87,7 @@ void write_event(const struct input_event *event)
 void write_key_event(const struct input_event *iep, bool syn_sleep)
 {
     write_event(iep);
-    write_event(&syn);
+    write_event(&SYN_EVENT);
     // If we write another event after `iep` we need to sleep first
     // for syncing of events to work (I think?)
     if (syn_sleep)
@@ -258,7 +258,8 @@ int main(void)
         /*             if (is_timer_armed(timer_ids[i])) */
         /*             { */
         /*                 timer_disarm(timer_ids[i]); */
-        /*                 write_key_event(&source_key_events[goi(i)][KEY_PRESSED], */
+        /*                 write_key_event(&source_key_events[goi(i)][KEY_PRESSED],
+         */
         /*                                 true); */
         /*             } */
         /*         } */
@@ -310,7 +311,8 @@ int main(void)
         /* default: */
         /*     break; */
         /* } */
-        /* // We don't need `fwrite(&event, sizeof(event), 1, stdout)` anymore here */
+        /* // We don't need `fwrite(&event, sizeof(event), 1, stdout)` anymore
+         * here */
 
         if (event.value == KEY_PRESSED && source_key_found < 0)
         {
@@ -320,8 +322,7 @@ int main(void)
                 if (is_timer_armed(timer_ids[i]))
                 {
                     timer_disarm(timer_ids[i]);
-                    write_key_event(&source_key_events[goi(i)][KEY_PRESSED],
-                                    true);
+                    write_key_event(&source_key_events[i][KEY_PRESSED], true);
                 }
             }
         }
