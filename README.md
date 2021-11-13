@@ -2,7 +2,7 @@
 
 Mostly inspired by Karabiner-Elements, [simultaneous docs](https://karabiner-elements.pqrs.org/docs/json/complex-modifications-manipulator-definition/from/simultaneous).
 
-## Why use timers?
+## Why use timers? (i.e. writing PRESS event delayed)
 (Let's assume a threshold of 50ms)
 
 Let's say we map the 'simultaneous' press of the keys `a`, `b` and `c` to `ESC`.
