@@ -4,9 +4,12 @@ import time
 
 STRUCT_FORMAT = "llHHI"
 INPUT_EVENT = struct.Struct(STRUCT_FORMAT)
+EVENT_SIZE = struct.calcsize(STRUCT_FORMAT)
 
 
 def main():
+    print("event size:", EVENT_SIZE)
+    print("input_event.size:", INPUT_EVENT.size)
     while True:
         data = sys.stdin.buffer.read(INPUT_EVENT.size)
         try:

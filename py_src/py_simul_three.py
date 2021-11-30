@@ -45,13 +45,15 @@ KEY = dict(
     LEFT=105,
     RIGHT=106,
     DOWN=108,
+    Q=16,
+    X=45,
 )
 SYN_REPORT = 0
 SYN_EVENT = InputEvent(0, 0, TYPE["EV_SYN"], SYN_REPORT, 0)
 
 # Simul config
-SOURCE_KEYS = (KEY["J"], KEY["K"], KEY["L"])
-TARGET_KEY = KEY["ESC"]
+SOURCE_KEYS = (KEY["Q"], KEY["X"])
+TARGET_KEY = KEY["S"]
 THRESHOLD_SEC = 0.05  # 0.05 sec == 50 ms
 
 

@@ -30,6 +30,8 @@ EV_MAX = 0x1F
 VALUE_RELEASE = 0
 VALUE_PRESS = 1
 VALUE_REPEAT = 2
+UP = 0
+DOWN = 1
 
 # input event key codes
 KEY_X = 45
@@ -37,27 +39,40 @@ KEY_H = 35
 KEY_J = 36
 KEY_K = 37
 KEY_L = 38
+KEY_Q = 16
+KEY_X = 45
 
 
 def main():
-    key_value = VALUE_PRESS
-    i = 0
-    lst = [KEY_J, KEY_K, KEY_L]
-    pool = itertools.cycle(lst)
-    while True:
-        key_code = next(pool)
-        event = struct.pack(STRUCT_FORMAT, 0, 0, EV_KEY, key_code, key_value)
-        sys.stdout.buffer.write(event)
-        sys.stdout.buffer.flush()
-        #
-        time.sleep(0.28)  # 0.01 sec == 10 ms
-        i += 1
+    # key_value = VALUE_PRESS
+    # i = 0
+    # lst = [KEY_J, KEY_K, KEY_L]
+    # pool = itertools.cycle(lst)
+    # while True:
+    #     key_code = next(pool)
+    #     event = struct.pack(STRUCT_FORMAT, 0, 0, EV_KEY, key_code, key_value)
+    #     sys.stdout.buffer.write(event)
+    #     sys.stdout.buffer.flush()
+    #     #
+    #     time.sleep(0.28)  # 0.01 sec == 10 ms
+    #     i += 1
     ##
     # event = struct.pack(FORMAT, 0, 0, EV_KEY, KEY_K, key_value)
     # sys.stdout.buffer.write(event)
     # sys.stdout.buffer.flush()
     ##
-    # time.sleep(2.02)  # 0.01 sec == 10 ms
+    # print(f"in test write: {time.time()}", file=sys.stderr)
+    time.sleep(1.02)  # 0.01 sec == 10 ms
+    ##
+    event = struct.pack(STRUCT_FORMAT, 0, 0, EV_KEY, KEY_Q, DOWN)
+    sys.stdout.buffer.write(event)
+    sys.stdout.buffer.flush()
+    time.sleep(4.02)  # 0.01 sec == 10 ms
+    event = struct.pack(STRUCT_FORMAT, 0, 0, EV_KEY, KEY_Q, UP)
+    sys.stdout.buffer.write(event)
+    sys.stdout.buffer.flush()
+    #
+    time.sleep(4)
 
 
 if __name__ == "__main__":

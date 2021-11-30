@@ -1,7 +1,10 @@
-- JOB: intercept -g $DEVNODE | ./out_simul | uinput -d $DEVNODE
+# - JOB: intercept -g $DEVNODE | python py_src/async_py_simul_three.py | uinput -d $DEVNODE
+# - JOB: intercept -g $DEVNODE | python py_src/chorded.py | uinput -d $DEVNODE
+- JOB: intercept -g $DEVNODE | python py_src/select_simul_three.py | uinput -d $DEVNODE
   DEVICE:
     EVENTS:
-      EV_KEY: [KEY_ESC, KEY_J, KEY_K]
+      EV_KEY: [KEY_ESC, KEY_J, KEY_K, KEY_L, KEY_S, KEY_Q, KEY_X]
     # if not specific device specified (i.e. LINK not set or `*` wildcard)
     # then all input devices are grabbed!
     LINK: /dev/input/by-id/usb-Apple_Inc._Apple_Internal_Keyboard___Trackpad_D3H82120G61F-if01-event-kbd
+    # LINK: /dev/input/by-id/*-event-kbd
