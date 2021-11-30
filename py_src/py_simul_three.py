@@ -1,10 +1,10 @@
-from functools import partial
 import struct
 import sys
 import time
+from enum import Enum, auto
+from functools import partial
 from threading import Timer
 from typing import Callable, Dict, List, Literal, NamedTuple, TypedDict
-from enum import Enum, auto
 
 
 class TargetState(Enum):
@@ -124,9 +124,7 @@ def main():
         # Handle source key:
         if event.value == VALUE["PRESS"]:
             other_sources = (
-                item
-                for item in sources_state
-                if item["source_key"] != event.code
+                item for item in sources_state if item["source_key"] != event.code
             )
             if all((s["timer"].is_alive() for s in other_sources)):
                 for source in other_sources:

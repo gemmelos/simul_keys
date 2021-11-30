@@ -13,6 +13,61 @@ from config import (
     TYPE,
     VALUE,
 )
+import os
+import struct
+import sys
+import time
+from asyncio.tasks import Task
+from enum import Enum, auto
+from typing import Dict, List, Literal, NamedTuple, TypedDict
+
+# Set buffering to 0, i.e. turn off buffering
+# ref: https://medium.com/@bramblexu/three-ways-to-close-buffer-for-stdout-stdin-stderr-in-python-8be694bd2737
+# XXX does this work though? :/
+sys.stdout = os.fdopen(sys.stdout.fileno(), "wb", buffering=0)
+sys.stderr = os.fdopen(sys.stderr.fileno(), "wb", buffering=0)
+sys.stdin = os.fdopen(sys.stdin.fileno(), "rb", buffering=0)
+
+
+class TargetState(Enum):
+    IDLE = auto()
+    PRESSED = auto()
+    RELEASED = auto()
+
+
+class SourceItem(TypedDict):
+    source_key: int
+    timer: Task
+
+
+class InputEvent(NamedTuple):
+    sec: int
+    usec: int
+    type: int
+    code: int
+    value: int
+
+
+# input_event struct format:
+# see: https://docs.python.org/3/library/struct.html#format-characters
+STRUCT_FORMAT = "llHHI"
+INPUT_EVENT = struct.Struct(STRUCT_FORMAT)
+TYPE = {"EV_SYN": 0, "EV_KEY": 1}
+VALUE = {"RELEASE": 0, "PRESS": 1, "REPEAT": 2}
+# See: https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h
+KEY = dict(
+    ESC=1,
+    S=31,
+    D=32,
+    H=35,
+    J=36,
+    K=37,
+    L=38,
+    UP=103,
+    LEFT=105,
+    RIGHT=106,
+    DOWN=108,
+)
 from type_hints import InputEvent, SourceItem, State, TargetState
 import datetime
 import aiofiles
@@ -26,7 +81,8 @@ def get_time():
 
 
 async def main():
-    state: State = {
+    # state: State = {
+    state = {
         "source": [
             {
                 "source_key": src_key,
@@ -47,10 +103,10 @@ async def main():
     write_stderr(f"[{get_time()}] {ss}" "\n")
 
     # while True:
-        # I think because this is blocking the async Task can never finish!!
-        # asyncio read? using `select` sys call? asyncio stream reader?
-        # event_raw = sys.stdin.buffer.read(INPUT_EVENT_SIZE)
-        
+    # I think because this is blocking the async Task can never finish!!
+    # asyncio read? using `select` sys call? asyncio stream reader?
+    # event_raw = sys.stdin.buffer.read(INPUT_EVENT_SIZE)
+
     async with aiofiles.open("/dev/stdin", "rb") as f:
         while True:
             event_raw = await f.read(INPUT_EVENT_SIZE)
@@ -182,6 +238,66 @@ def write_stderr(msg: str):
 
 async def dummy():
     return
+
+
+# if event.type != TYPE["EV_KEY"]:
+#     write_raw_event(event_raw)
+#     continue
+
+# # Handle non-source key
+# if event.code not in SOURCE_KEYS:
+#     if event.value == VALUE["PRESS"]:
+#         for source in sources_state:
+#             if not source["timer"].done():
+#                 source["timer"].cancel()
+#                 write_key_event(source["source_key"], VALUE["PRESS"])
+#     write_raw_event(event_raw)
+#     continue
+
+# # Incoming source key (next should always find the item here)
+# # (returns reference to dict in list)
+# inc_source = next(
+#     item for item in sources_state if item["source_key"] == event.code
+# )
+# inc_src_idx = sources_state.index(inc_source)
+
+# # Handle source key:
+# if event.value == VALUE["PRESS"]:
+#     other_sources = (
+#         item for item in sources_state if item["source_key"] != event.code
+#     )
+#     if all((not s["timer"].done() for s in other_sources)):
+#         for source in other_sources:
+#             source["timer"].cancel()
+#         write_key_event(TARGET_KEY, VALUE["PRESS"], False)
+#         target_state: TargetState = TargetState.PRESSED
+#         target_state_sources_down = {
+#             k: "down" for k in target_state_sources_down
+#         }
+#     else:
+#         inc_source["timer"] = asyncio.create_task(
+#             write_event_delayed(THRESHOLD_SEC, inc_source["source_key"])
+#         )
+#         sources_state.insert(
+#             num_source_keys - 1,
+#             sources_state.pop(inc_src_idx),
+#         )
+# elif event.value == VALUE["RELEASE"]:
+#     if target_state == TargetState.PRESSED:
+#         write_key_event(TARGET_KEY, VALUE["RELEASE"], False)
+#         target_state = TargetState.RELEASED
+#         target_state_sources_down[event.code] = "up"
+#     elif target_state == TargetState.RELEASED:
+#         target_state_sources_down[event.code] = "up"
+#         # Only set target state to IDLE if all source keys are up again
+#         if all((v == "up" for v in target_state_sources_down.values())):
+#             target_state = TargetState.IDLE
+#     else:
+#         # Could be releasing a source key (before task expiry)
+#         if not inc_source["timer"].done():
+#             inc_source["timer"].cancel()
+#             write_key_event(inc_source["source_key"], VALUE["PRESS"])
+#         write_raw_event(event_raw)
 
 
 if __name__ == "__main__":
